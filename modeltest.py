@@ -36,6 +36,10 @@ yls = mls*xt+bls
 print "Least squares fit:"
 print "m =",mls
 print "b =",bls
+# Notes for LS
+# A: ones_like creates a matrix of 1's same size as x, then vstack puts this matrix ontop of x, then .T takes the transpose.
+# C: diag creates a 50x50 matrix where ye*ye vector is along the axis.
+# cov: Firstly, linalg.solve solves for x using Cx=A, where thus it will be 
 
 # Maximum likelihood estimation
 nll = lambda *args: -lnlike(*args)
