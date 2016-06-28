@@ -8,3 +8,13 @@ print y
 print a
 v = np.linalg.solve(a, y)
 print v
+
+#b = np.array([3,4,20])
+b = np.array([[3, 4], [4, 4], [20, 4]]).T
+c = np.array([[2, 5], [3, 6], [4, 5]])
+d = np.dot(b, c)
+print b
+print c
+print d
+
+

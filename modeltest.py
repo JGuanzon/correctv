@@ -30,6 +30,7 @@ y += ye * np.random.randn(N)
 # Least squares fit
 A = np.vstack((np.ones_like(x),x)).T
 C = np.diag(ye*ye)
+T = np.dot(A.T, np.linalg.solve(C, A))
 cov = np.linalg.inv(np.dot(A.T, np.linalg.solve(C, A)))
 bls, mls = np.dot(cov, np.dot(A.T, np.linalg.solve(C,y)))
 yls = mls*xt+bls
@@ -39,7 +40,7 @@ print "b =",bls
 # Notes for LS
 # A: ones_like creates a matrix of 1's same size as x, then vstack puts this matrix ontop of x, then .T takes the transpose.
 # C: diag creates a 50x50 matrix where ye*ye vector is along the axis.
-# cov: Firstly, linalg.solve solves for x using Cx=A, where thus it will be 
+# cov: Firstly, linalg.solve solves for x using Cx=A, where A is two columbs of solutions thus it will be (ye*ye)^(-1)|a column of answers.
 
 # Maximum likelihood estimation
 nll = lambda *args: -lnlike(*args)
