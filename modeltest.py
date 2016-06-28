@@ -50,6 +50,12 @@ yml = mml*xt+bml
 print "Maximum likelihood fit:"
 print "m = ",mml
 print "b = ",bml
+print "f = ",np.exp(lnfml)
+# Notes for ML
+# nll: lambda creates an anonymous function equivalent to the negative lnlike function, passes the arguments to it.
+# then passes it through to the minimise function (as its the negative of the function).
+
+# Marginlization & uncertainty estimation
 
 # Plots
 plt.plot(xt,yt,'-',xt,yls,'--',xt,yml,':')
