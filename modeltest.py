@@ -3,11 +3,25 @@ import matplotlib.pyplot as plt
 import scipy.optimize as op
 
 # Maximum likelihood estimation function
-def lnlike(theta,x,y,ye):
+def lnlike(theta,x,y,yerr):
     m, b, lnf = theta
     model = m*x+b
-    inv_sigma2 = 1.0/(ye**2+model**2*np.exp(2*lnf))
+    inv_sigma2 = 1.0/(yerr**2+model**2*np.exp(2*lnf))
     return -0.5*(np.sum((y-model)**2*inv_sigma2 - np.log(inv_sigma2)))
+
+# MCMC: Log prior
+def lnprior(theta):
+    m, b, lnf = theta
+    if -5.0 < m < 0.5 and 0 < b < 10 and -10 < lnf < 1.0:
+        return 0.0
+    return -np.inf
+
+# MCMC: log probability function
+def lnprob(theta, x, y, yerr):
+    lp = lnprior(theta)
+    if not np.isfinite(lp):
+        return -np.inf
+    return lp + lnlike(theta,x,y,yerr)
 
 # True parameters
 mt = -0.9594
@@ -56,6 +70,8 @@ print "f = ",np.exp(lnfml)
 # then passes it through to the minimise function (as its the negative of the function).
 
 # Marginlization & uncertainty estimation
+
+# Notes for MCMC
 
 # Plots
 plt.plot(xt,yt,'-',xt,yls,'--',xt,yml,':')
