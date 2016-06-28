@@ -36,7 +36,7 @@ print "m =",mls
 print "b =",bls
 
 # Maximum likelihood estimation
-nll = lambda
+# nll = lambda
 
 # Plots
 plt.plot(xt,yt,'-',xt,yls,'--')
