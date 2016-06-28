@@ -13,11 +13,13 @@ def lnlike(theta,x,y,ye):
 mt = -0.9594
 bt = 4.294
 ft = 0.534
-# Create arrays for true values
 xt = np.arange(0,10.5)
 yt = mt*xt+bt
+print "True values:"
+print "m =",mt
+print "b =",bt
 
-# Generating fake data
+# Generating fake data with randomization
 N = 50
 x = np.sort(10*np.random.rand(N))
 ye = 0.1 + 0.5*np.random.rand(N)
@@ -36,9 +38,15 @@ print "m =",mls
 print "b =",bls
 
 # Maximum likelihood estimation
-# nll = lambda
+nll = lambda *args: -lnlike(*args)
+result = op.minimize(nll, [mt, bt, np.log(ft)], args=(x,y,ye))
+mml, bml, lnfml = result["x"]
+yml = mml*xt+bml
+print "Maximum likelihood fit:"
+print "m = ",mml
+print "b = ",bml
 
 # Plots
-plt.plot(xt,yt,'-',xt,yls,'--')
+plt.plot(xt,yt,'-',xt,yls,'--',xt,yml,':')
 plt.errorbar(x,y,yerr=ye,fmt='.')
 plt.show()
