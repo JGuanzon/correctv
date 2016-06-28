@@ -1,4 +1,4 @@
-# correctv
+# Should we Correct for Peculiar Velocities?
 Primary aim is to answer the question, "Should we Correct for Peculiar Velocities?"
 
 
@@ -18,4 +18,5 @@ Primary aim is to answer the question, "Should we Correct for Peculiar Velocitie
 
 
 **Details**
+
 In supernova cosmology, peculiar velocities are often seen as just a source of noise.  As such, the effects of peculiar velocities are estimated from large scale structure, and then ‘correct’ by changing the observed redshift.  In this project, we’ll assess if these peculiar velocity corrections are a good idea.  Do they significantly improve our accuracy, or do they bias our precision?
