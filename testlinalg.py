@@ -17,4 +17,7 @@ print b
 print c
 print d
 
-
+e = np.array([[2, 5], [3, 6]])
+f = np.linalg.inv(e)
+print e
+print f

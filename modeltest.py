@@ -40,7 +40,7 @@ print "b =",bls
 # Notes for LS
 # A: ones_like creates a matrix of 1's same size as x, then vstack puts this matrix ontop of x, then .T takes the transpose.
 # C: diag creates a 50x50 matrix where ye*ye vector is along the axis.
-# cov: Firstly, linalg.solve solves for x using Cx=A, where A is two columbs of solutions thus it will be (ye*ye)^(-1)|a column of answers.
+# cov: Firstly, linalg.solve solves for x using Cx=A, where A is two columns of solutions thus it will be (ye*ye)^(-1)|a column of answers. Next, dot product between to matrices. Then finally take the inverse of the matrix.
 
 # Maximum likelihood estimation
 nll = lambda *args: -lnlike(*args)
