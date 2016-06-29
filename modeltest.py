@@ -9,7 +9,7 @@ def lnlike(theta,x,y,yerr):
     m, b, lnf = theta
     model = m*x+b
     inv_sigma2 = 1.0/(yerr**2+model**2*np.exp(2*lnf))
-    return -0.5*(np.sum((y-model)**2*inv_sigma2 - np.log(inv_sigma2))) # For some reason missing 2*pi? Should be -np.log(2*pi*inv_sigma2)
+    return -0.5*(np.sum((y-model)**2*inv_sigma2 - np.log(inv_sigma2))) # For some reason missing 2*pi? Should be + np.log(2*np.pi*inv_sigma2**(-1))
 
 # MCMC: Log prior
 def lnprior(theta):
@@ -74,20 +74,28 @@ print "f = ",np.exp(lnfml)
 # nll: lambda creates an anonymous function equivalent to the negative lnlike function, passes the arguments to it.
 # then passes it through to the minimise function (as its the negative of the function).
 
-# Marginlization & uncertainty estimation
+# Marginalization & uncertainty estimation
 ndim, nwalkers = 3, 100
 pos = [result["x"] + 1e-4*np.random.randn(ndim) for i in range(nwalkers)]
 sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(x, y, ye))
 sampler.run_mcmc(pos,500)
 samples = sampler.chain[:,50:,:].reshape((-1,ndim))
 # Notes for MCMC
+# Uses Markov Chain Monte Carlo process to sample paramaters from the lnprob distribution function.
+# Initial positions of 100 walkers are a Gaussian sphere of 1e^-4*normal distribution centered at the ML results.
+# Then run over 500 steps of the sampler. Finally, removes the first 50 steps and combines the rest together.
 
 # Corner Plots
 fig = corner.corner(samples, labels=["$m$", "$b$", "$\ln\,f$"], truths=[mt, bt, np.log(ft)])
 #fig.savefig("triangle.png")
 
-# Plots
+# Plot Comparing Data vs Actual vs LS vs ML
 plt.figure()
 plt.plot(xt,yt,'-',xt,yls,'--',xt,yml,':')
 plt.errorbar(x,y,yerr=ye,fmt='.')
 plt.show()
+
+# Another Plot
+plt.figure()
+x1 = np.array([0, 10])
+#for m, b, lnf in samples[]
