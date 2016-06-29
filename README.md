@@ -10,7 +10,7 @@ Primary aim is to answer the question, "Should we Correct for Peculiar Velocitie
 - [x] Generate probablisitic model
 - [x] Least squares fit + Linear algebra
 - [x] Maximum likelihood estimation
-- [ ] Marginalization & uncertainty estimation
+- [x] Marginalization & uncertainty estimation
 - [ ] Results
 
 **05/07-x/07**
