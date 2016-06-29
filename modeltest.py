@@ -84,6 +84,8 @@ samples = sampler.chain[:,50:,:].reshape((-1,ndim))
 # Uses Markov Chain Monte Carlo process to sample paramaters from the lnprob distribution function.
 # Initial positions of 100 walkers are a Gaussian sphere of 1e^-4*normal distribution centered at the ML results.
 # Then run over 500 steps of the sampler. Finally, removes the first 50 steps and combines the rest together.
+samples[:, 2] = np.exp(samples[:, 2])
+mmcmc, bmcmc, fmcmc = map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]), zip(*np.percentile(samples, [16, 50, 84], axis=0)))
 
 # Corner Plots
 fig = corner.corner(samples, labels=["$m$", "$b$", "$\ln\,f$"], truths=[mt, bt, np.log(ft)])
@@ -98,4 +100,7 @@ plt.show()
 # Another Plot
 plt.figure()
 x1 = np.array([0, 10])
-#for m, b, lnf in samples[]
+for m, b, lnf in samples[np.random.randint(len(samples), size=100)]:
+    plt.plot(x1, m*x1+b, color="k", alpha=0.1)
+plt.plot(x1, mt*x1+bt, color="r", lw=2, alpha=0.8)
+plt.errorbar(x, y, yerr=ye, fmt=".k")
