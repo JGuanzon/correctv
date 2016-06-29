@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.optimize as op
 import emcee
+import corner
 
 # Maximum likelihood estimation function
 def lnlike(theta,x,y,yerr):
@@ -81,8 +82,12 @@ sampler.run_mcmc(pos,500)
 samples = sampler.chain[:,50:,:].reshape((-1,ndim))
 # Notes for MCMC
 
+# Corner Plots
+fig = corner.corner(samples, labels=["$m$", "$b$", "$\ln\,f$"], truths=[mt, bt, np.log(ft)])
+#fig.savefig("triangle.png")
 
 # Plots
+plt.figure()
 plt.plot(xt,yt,'-',xt,yls,'--',xt,yml,':')
 plt.errorbar(x,y,yerr=ye,fmt='.')
 plt.show()
