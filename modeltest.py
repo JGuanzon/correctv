@@ -1,13 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.optimize as op
+import emcee
 
 # Maximum likelihood estimation function
 def lnlike(theta,x,y,yerr):
     m, b, lnf = theta
     model = m*x+b
     inv_sigma2 = 1.0/(yerr**2+model**2*np.exp(2*lnf))
-    return -0.5*(np.sum((y-model)**2*inv_sigma2 - np.log(inv_sigma2)))
+    return -0.5*(np.sum((y-model)**2*inv_sigma2 - np.log(inv_sigma2))) # For some reason missing 2*pi? Should be -np.log(2*pi*inv_sigma2)
 
 # MCMC: Log prior
 def lnprior(theta):
@@ -16,7 +17,7 @@ def lnprior(theta):
         return 0.0
     return -np.inf
 
-# MCMC: log probability function
+# MCMC: Log probability function
 def lnprob(theta, x, y, yerr):
     lp = lnprior(theta)
     if not np.isfinite(lp):
@@ -32,6 +33,7 @@ yt = mt*xt+bt
 print "True values:"
 print "m =",mt
 print "b =",bt
+print "f = ",ft
 
 # Generating fake data with randomization
 N = 50
@@ -52,6 +54,7 @@ print "Least squares fit:"
 print "m =",mls
 print "b =",bls
 # Notes for LS
+# Minimises the sum of the squared of the differences between the data and a changing model.
 # A: ones_like creates a matrix of 1's same size as x, then vstack puts this matrix ontop of x, then .T takes the transpose.
 # C: diag creates a 50x50 matrix where ye*ye vector is along the axis.
 # cov: Firstly, linalg.solve solves for x using Cx=A, where A is two columns of solutions thus it will be (ye*ye)^(-1)|a column of answers. Next, dot product between to matrices. Then finally take the inverse of the matrix.
@@ -66,12 +69,18 @@ print "m = ",mml
 print "b = ",bml
 print "f = ",np.exp(lnfml)
 # Notes for ML
+# For a fixed data set, finds the set of parameters which maximises the likelihood function.
 # nll: lambda creates an anonymous function equivalent to the negative lnlike function, passes the arguments to it.
 # then passes it through to the minimise function (as its the negative of the function).
 
 # Marginlization & uncertainty estimation
-
+ndim, nwalkers = 3, 100
+pos = [result["x"] + 1e-4*np.random.randn(ndim) for i in range(nwalkers)]
+sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(x, y, ye))
+sampler.run_mcmc(pos,500)
+samples = sampler.chain[:,50:,:].reshape((-1,ndim))
 # Notes for MCMC
+
 
 # Plots
 plt.plot(xt,yt,'-',xt,yls,'--',xt,yml,':')
