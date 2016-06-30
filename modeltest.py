@@ -55,7 +55,7 @@ print "Least squares fit:"
 print "m =",mls
 print "b =",bls
 # Notes for LS
-# Minimises the sum of the squared of the differences between the data and a changing model.
+# Minimises the sum of the squared of the differences between the data and a changing model (weighted for uncertainty).
 # A: ones_like creates a matrix of 1's same size as x, then vstack puts this matrix ontop of x, then .T takes the transpose.
 # C: diag creates a 50x50 matrix where ye*ye vector is along the axis.
 # cov: Firstly, linalg.solve solves for x using Cx=A, where A is two columns of solutions thus it will be (ye*ye)^(-1)|a column of answers. Next, dot product between to matrices. Then finally take the inverse of the matrix.
@@ -86,6 +86,10 @@ samples = sampler.chain[:,50:,:].reshape((-1,ndim))
 # Then run over 500 steps of the sampler. Finally, removes the first 50 steps and combines the rest together.
 samples[:, 2] = np.exp(samples[:, 2])
 mmcmc, bmcmc, fmcmc = map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]), zip(*np.percentile(samples, [16, 50, 84], axis=0)))
+print "MCMC + Uncertainty:"
+print "m = ",mmcmc
+print "b = ",bmcmc
+print "f = ",fmcmc
 
 # Corner Plots
 fig = corner.corner(samples, labels=["$m$", "$b$", "$\ln\,f$"], truths=[mt, bt, np.log(ft)])
@@ -95,7 +99,6 @@ fig = corner.corner(samples, labels=["$m$", "$b$", "$\ln\,f$"], truths=[mt, bt, 
 plt.figure()
 plt.plot(xt,yt,'-',xt,yls,'--',xt,yml,':')
 plt.errorbar(x,y,yerr=ye,fmt='.')
-plt.show()
 
 # Another Plot
 plt.figure()
@@ -104,3 +107,4 @@ for m, b, lnf in samples[np.random.randint(len(samples), size=100)]:
     plt.plot(x1, m*x1+b, color="k", alpha=0.1)
 plt.plot(x1, mt*x1+bt, color="r", lw=2, alpha=0.8)
 plt.errorbar(x, y, yerr=ye, fmt=".k")
+plt.show()

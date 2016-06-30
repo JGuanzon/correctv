@@ -11,7 +11,9 @@ Primary aim is to answer the question, "Should we Correct for Peculiar Velocitie
 - [x] Least squares fit + Linear algebra
 - [x] Maximum likelihood estimation
 - [x] Marginalization & uncertainty estimation
-- [ ] Results
+- [x] Results
+- [ ] Read more about relevant probability/statistics
+- [ ] Read more about peculiar velocities
 
 **05/07-x/07**
 - [ ] ???
