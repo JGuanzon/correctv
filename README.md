@@ -5,7 +5,7 @@ Primary aim is to answer the question, "Should we Correct for Peculiar Velocitie
 **To Do List**
 
 **27/06-01/07**
-- [ ] *Go through the [Fitting a Model to Data](http://dan.iel.fm/emcee/current/user/line/) by Friday.*
+- [x] *Go through the [Fitting a Model to Data](http://dan.iel.fm/emcee/current/user/line/) by Friday.*
 - [x] Python + GitHub setup
 - [x] Generate probablisitic model
 - [x] Least squares fit + Linear algebra
