@@ -6,7 +6,7 @@ Primary aim is to answer the question, "Should we Correct for Peculiar Velocitie
 
 **To Do List**
 
-**05/07-08/07**
+**04/07-08/07**
 - [ ] Read [Davis T, et al](http://arxiv.org/abs/1012.2912) paper.
 - [ ] Read Ed's paper.
 - [ ] Review background information for all the different variables.
