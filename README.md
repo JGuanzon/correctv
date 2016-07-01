@@ -7,7 +7,6 @@ In supernova cosmology, peculiar velocities are often seen as just a source of n
 **To Do List**
 
 **04/07-08/07**
-- [ ] Read [Davis T, et al](http://arxiv.org/abs/1012.2912) paper.
 - [ ] Read Ed's paper.
 - [ ] Review background information for all the different variables.
 - [ ] Review [Ed's code](https://github.com/EdMacaulay/Spectroscopic_SN_min_ChSq).
@@ -27,3 +26,5 @@ In supernova cosmology, peculiar velocities are often seen as just a source of n
 - [x] Results
 - [x] Read more about relevant probability/statistics
 - [x] Read more about peculiar velocities
+- [ ] Check mistake on emcee.
+- [ ] Read [Davis T, et al](http://arxiv.org/abs/1012.2912) paper.
