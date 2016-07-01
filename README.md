@@ -12,7 +12,7 @@ Primary aim is to answer the question, "Should we Correct for Peculiar Velocitie
 - [x] Maximum likelihood estimation
 - [x] Marginalization & uncertainty estimation
 - [x] Results
-- [ ] Read more about relevant probability/statistics
+- [x] Read more about relevant probability/statistics
 - [ ] Read more about peculiar velocities
 
 **05/07-x/07**
