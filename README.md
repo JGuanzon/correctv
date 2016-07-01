@@ -17,7 +17,7 @@ In supernova cosmology, peculiar velocities are often seen as just a source of n
 - [ ] Fit for omega_0 and omega_alpha.
 
 **27/06-01/07**
-- [x] *Go through the [Fitting a Model to Data](http://dan.iel.fm/emcee/current/user/line/) by Friday.*
+- [x] Go through the [Fitting a Model to Data](http://dan.iel.fm/emcee/current/user/line/) by Friday.
 - [x] Python + GitHub setup
 - [x] Generate probablisitic model
 - [x] Least squares fit + Linear algebra
@@ -26,5 +26,5 @@ In supernova cosmology, peculiar velocities are often seen as just a source of n
 - [x] Results
 - [x] Read more about relevant probability/statistics
 - [x] Read more about peculiar velocities
-- [ ] Check mistake on emcee.
+- [ ] Check 'mistake' on emcee (the missing 2*pi). *Results: *
 - [ ] Read [Davis T, et al](http://arxiv.org/abs/1012.2912) paper.
