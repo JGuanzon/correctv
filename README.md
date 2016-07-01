@@ -26,5 +26,5 @@ In supernova cosmology, peculiar velocities are often seen as just a source of n
 - [x] Results
 - [x] Read more about relevant probability/statistics
 - [x] Read more about peculiar velocities
-- [ ] Check 'mistake' on emcee (the missing 2*pi). *Results: *
+- [x] Check 'mistake' on emcee (the missing 2pi). *Results: Running it with and without 2pi didn't change the outcome*
 - [ ] Read [Davis T, et al](http://arxiv.org/abs/1012.2912) paper.
