@@ -11,78 +11,53 @@ import math
 # from collections import OrderedDict
 # from astropy import units as u
 
-def Ez( z, Omega_M, Omega_L, w_o, w_a):
 
+def iEz(z, Omega_M, Omega_L, w_o, w_a):
 	# scale factor
 	a = 1 / (1+z)
-
 	# equation of state of Dark Energy w(z)
 	w_z = w_o + w_a * ( z / a )
-
 	# E(z)
 	Ez = (Omega_L * math.pow( (1+z), (3*(1+w_z)) ) ) +	(Omega_M * math.pow( (1+z), 3) )
-
 	Ez = math.sqrt( Ez )
-	Ez = 1.0 / Ez
-
-	return Ez
-
-
-def Luminosity_Distance( z_hel, z_cmb, Omega_M, Omega_L, w_o, w_a):
+	invEz = 1.0 / Ez
+	return invEz
 
 
-	# factor in units
-	Dc = Comoving_Distance( z_cmb, Omega_M, Omega_L, w_o, w_a)
-
-	# calculate the luminosity distance
-	Dl = Dc * (1.0+z_hel)
-
-	return Dl
-
-def Comoving_Distance( z, Omega_M, Omega_L, w_o, w_a):
-
+def Comoving_Distance(z, Omega_M, Omega_L, w_o, w_a):
 	# Speed of light, in km / s
 	cLight = 299792.458
-
 	# Hubble's constant, in (km / s) / Mpc
 	H_o = 70.0
-
 	# integrate E(z) to get comoving distance
-	Dc, error = quad( Ez, 0, z, args=(Omega_M, Omega_L, w_o, w_a)  )
-
+	Dc, error = quad(iEz, 0, z, args=(Omega_M, Omega_L, w_o, w_a))
 	# factor in units
 	Dc = Dc* (cLight/H_o)
-
 	return Dc
 
+def Luminosity_Distance(z_hel, z_cmb, Omega_M, Omega_L, w_o, w_a):
+	# factor in units
+	Dc = Comoving_Distance(z_cmb, Omega_M, Omega_L, w_o, w_a)
+	# calculate the luminosity distance
+	Dl = Dc * (1.0+z_hel)
+	return Dl
 
-def distance_modulus( z_hel, z_cmb, Omega_M, Omega_L, w_o, w_a   ):
-
+def distance_modulus(z_hel, z_cmb, Omega_M, Omega_L, w_o, w_a):
 	# get the luminosity distance
-	d_L = Luminosity_Distance( z_hel, z_cmb, Omega_M, Omega_L, w_o, w_a)
-
+	d_L = Luminosity_Distance(z_hel, z_cmb, Omega_M, Omega_L, w_o, w_a)
 	# convert to distance modulus
-	mu = 25 + 5.0 *  np.log10( d_L  )
-
+	mu = 25 + 5.0 *  np.log10(d_L)
 	return mu
 
+
+# ****** EMCEE Functions ******
 
 # defines a prior.  just sets acceptable ranges
 def lnprior(theta):
     my_Om0, my_w0, alpha, beta, M_1_B, Delta_M = theta
-
     if  0.0 < my_Om0 < 1.0 and -2.0 < my_w0 < -0.0:
         return 0.0
     return -np.inf
-
-
-# lnprob - this just combines prior with likelihood
-def lnprob(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
-    lp = lnprior(theta)
-    if not np.isfinite(lp):
-        return -np.inf
-    return lp + lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta)
-
 
 # defines likelihood.  has to be ln likelihood
 def lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
@@ -121,7 +96,7 @@ def lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
 
     ChSq = np.dot(Delta, (np.dot(inv_CM, Delta)))
 
-    # ***** write parameters ******
+    # ****** write parameters ******
     param_file_name = 'my_params_JLA_FlatwCDM_20160610c.txt'
 
     chain_path = 'Chains/'
@@ -143,15 +118,20 @@ def lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
 
     return -0.5 * ChSq
 
+# lnprob - this just combines prior with likelihood
+def lnprob(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
+    lp = lnprior(theta)
+    if not np.isfinite(lp):
+        return -np.inf
+    return lp + lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta)
 
-# ****** load eta covariance matrix ****************
 
+# ****** load eta covariance matrix ******
 #Ceta = sum([pyfits.getdata(mat) for mat in glob.glob('covmat/C*.fits')])
-
 Ceta = pyfits.getdata('C_eta_20160610.fits')
 
 
-# ****** load JLA ****************
+# ****** load JLA ******
 FileName = 'jla_lcparams-header.txt'
 DataBlock = np.genfromtxt(FileName, skip_header=1, delimiter=' ')
 
@@ -163,6 +143,7 @@ color = DataBlock[:, 8]
 thirdvar = DataBlock[:, 10]
 ra = DataBlock[:, 18]
 dec = DataBlock[:, 19]
+
 
 # best fit values from Betoule paper
 alpha = 0.141
@@ -184,7 +165,6 @@ ndim = len(startValues)
 # how many walkers
 nwalkers = 100
 nSteps = 1000
-
 pos = [startValues + 1e-3 * np.random.randn(ndim) for i in range(nwalkers)]
 
 # setup the sampler
