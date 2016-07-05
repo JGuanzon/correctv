@@ -1,10 +1,8 @@
-# Copy pasted on the 01/07
 import numpy as np
 import emcee
 import pyfits
 import glob
 from scipy.integrate import quad
-
 import math
 # import astropy
 # import matplotlib.pyplot as plt
@@ -78,13 +76,11 @@ def lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
 
     # observation
     mod = mb - (M_1_B - alpha * x1 + beta * color)
-
     for i in range(0, len(zcmb)):
         if thirdvar[i] > 10:
             mod[i] = mod[i] - Delta_M
 
     mod_theory = []
-
     for i in range(0, len(zcmb)):
         mod_i = distance_modulus(zhel[i], zcmb[i], my_Om0, (1.0-my_Om0), my_w0, 0.0)
         mod_theory = np.append(mod_theory,mod_i)
@@ -128,7 +124,7 @@ def lnprob(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
 
 # ****** load eta covariance matrix ******
 #Ceta = sum([pyfits.getdata(mat) for mat in glob.glob('covmat/C*.fits')])
-Ceta = pyfits.getdata('C_eta_20160610.fits')
+Ceta = pyfits.getdata('C_total_20160610.fits')
 
 
 # ****** load JLA ******
