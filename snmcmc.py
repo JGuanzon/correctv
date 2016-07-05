@@ -121,7 +121,7 @@ def lnprob(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
         return -np.inf
     return lp + lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta)
 
-
+#testing change
 # ****** load eta covariance matrix ******
 #Ceta = sum([pyfits.getdata(mat) for mat in glob.glob('covmat/C*.fits')])
 Ceta = pyfits.getdata('C_total_20160610.fits')
