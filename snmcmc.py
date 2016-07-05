@@ -1,26 +1,22 @@
 import numpy as np
 import emcee
 import pyfits
-import glob
 from scipy.integrate import quad
 import math
-# import astropy
-# import matplotlib.pyplot as plt
-# from collections import OrderedDict
-# from astropy import units as u
 
+
+# ****** Distance Calculation Functions ******
 
 def iEz(z, Omega_M, Omega_L, w_o, w_a):
 	# scale factor
-	a = 1 / (1+z)
+	a = 1/(1+z)
 	# equation of state of Dark Energy w(z)
 	w_z = w_o + w_a * ( z / a )
 	# E(z)
-	Ez = (Omega_L * math.pow( (1+z), (3*(1+w_z)) ) ) +	(Omega_M * math.pow( (1+z), 3) )
-	Ez = math.sqrt( Ez )
+	Ez = Omega_L*math.pow(1+z,3*(1+w_z)) + Omega_M*math.pow(1+z,3)
+	Ez = math.sqrt(Ez)
 	invEz = 1.0 / Ez
 	return invEz
-
 
 def Comoving_Distance(z, Omega_M, Omega_L, w_o, w_a):
 	# Speed of light, in km / s
@@ -50,64 +46,53 @@ def distance_modulus(z_hel, z_cmb, Omega_M, Omega_L, w_o, w_a):
 
 # ****** EMCEE Functions ******
 
-# defines a prior.  just sets acceptable ranges
+# Defines a prior.  just sets acceptable ranges
 def lnprior(theta):
     my_Om0, my_w0, alpha, beta, M_1_B, Delta_M = theta
     if  0.0 < my_Om0 < 1.0 and -2.0 < my_w0 < -0.0:
         return 0.0
     return -np.inf
 
-# defines likelihood.  has to be ln likelihood
+# Defines likelihood.  has to be ln likelihood
 def lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
     my_Om0, my_w0, alpha, beta, M_1_B, Delta_M = theta
-    #print my_Om0
-    # assemble covariance matrix
 
-    Cmu = np.zeros_like(Ceta[::3, ::3])
-
-    for i, coef1 in enumerate([1., alpha, -beta]):
-        for j, coef2 in enumerate([1., alpha, -beta]):
-            Cmu += (coef1 * coef2) * Ceta[i::3, j::3]
+    # Assemble covariance matrix
+    #Cmu = np.zeros_like(Ceta[::3, ::3])
+    #for i, coef1 in enumerate([1., alpha, -beta]):
+    #    for j, coef2 in enumerate([1., alpha, -beta]):
+    #        Cmu += (coef1 * coef2) * Ceta[i::3, j::3]
 
     # Add diagonal term from Eq. 13
-    sigma = np.loadtxt('covmat/sigma_mu.txt')
-    sigma_pecvel = (5 * 150 / 3e5) / (np.log(10.) * sigma[:, 2])
-    Cmu[np.diag_indices_from(Cmu)] += sigma[:, 0] ** 2 + sigma[:, 1] ** 2 + sigma_pecvel ** 2
+    #sigma = np.loadtxt('covmat/sigma_mu.txt')
+    #sigma_pecvel = (5 * 150 / 3e5) / (np.log(10.) * sigma[:, 2])
+    #Cmu[np.diag_indices_from(Cmu)] += sigma[:, 0] ** 2 + sigma[:, 1] ** 2 + sigma_pecvel ** 2
 
-    # observation
+    # Observation
     mod = mb - (M_1_B - alpha * x1 + beta * color)
     for i in range(0, len(zcmb)):
         if thirdvar[i] > 10:
             mod[i] = mod[i] - Delta_M
 
+    # Theory
     mod_theory = []
     for i in range(0, len(zcmb)):
         mod_i = distance_modulus(zhel[i], zcmb[i], my_Om0, (1.0-my_Om0), my_w0, 0.0)
         mod_theory = np.append(mod_theory,mod_i)
 
-
+    # ChSq
     Delta = mod - mod_theory
-
-    inv_CM = np.linalg.pinv(Cmu)
-
+    #inv_CM = np.linalg.pinv(Cmu)
     ChSq = np.dot(Delta, (np.dot(inv_CM, Delta)))
 
-    # ****** write parameters ******
-    param_file_name = 'my_params_JLA_FlatwCDM_20160610c.txt'
-
-    chain_path = 'Chains/'
-    chain_path_file = chain_path + param_file_name
-    f_handle = open(chain_path_file, 'a')
+    # Write parameters
+    f_handle = open('Chains/my_params_JLA_FlatwCDM_20160610c.txt', 'a')
     stringOut = str(my_Om0) +  ',' + str(my_w0)  + ',' + str(
         alpha) + ',' + str(beta) + ',' + str(M_1_B) + ',' + str(Delta_M) + '\n'
-
     f_handle.write(stringOut)
     f_handle.close()
 
-    param_file_name = 'ChSqFile_JLA_FlatwCDM_20160610c.txt'
-    chain_path = 'ChSq_Chains/'
-    chain_path_file = chain_path + param_file_name
-    f_handle = open(chain_path_file, 'a')
+    f_handle = open('ChSq_Chains/ChSqFile_JLA_FlatwCDM_20160610c.txt', 'a')
     stringOut = str(ChSq) + '\n'
     f_handle.write(stringOut)
     f_handle.close()
@@ -121,11 +106,9 @@ def lnprob(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
         return -np.inf
     return lp + lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta)
 
-#testing change
 # ****** load eta covariance matrix ******
-#Ceta = sum([pyfits.getdata(mat) for mat in glob.glob('covmat/C*.fits')])
-Ceta = pyfits.getdata('C_total_20160610.fits')
-
+#Ceta = pyfits.getdata('C_total_20160610.fits')
+Ceta = 0;
 
 # ****** load JLA ******
 FileName = 'jla_lcparams-header.txt'
@@ -140,7 +123,6 @@ thirdvar = DataBlock[:, 10]
 ra = DataBlock[:, 18]
 dec = DataBlock[:, 19]
 
-
 # best fit values from Betoule paper
 alpha = 0.141
 beta = 3.101
@@ -153,7 +135,7 @@ Ode0 = 0.7
 my_w0 = -1.0
 wa = 0.0
 
-startValues = [ my_Om0, my_w0, alpha, beta, M_1_B, Delta_M]
+startValues = [my_Om0, my_w0, alpha, beta, M_1_B, Delta_M]
 
 # how many parameters to fit
 ndim = len(startValues)
@@ -164,7 +146,7 @@ nSteps = 1000
 pos = [startValues + 1e-3 * np.random.randn(ndim) for i in range(nwalkers)]
 
 # setup the sampler
-sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(zhel, zcmb, mb, x1, color, thirdvar, Ceta), threads=16)
+#sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(zhel, zcmb, mb, x1, color, thirdvar, Ceta), threads=16)
 # run the sampler
 # how many steps (will have nSteps*nwalkers of samples)
-sampler.run_mcmc(pos, nSteps)
+#sampler.run_mcmc(pos, nSteps)
