@@ -1,7 +1,7 @@
 # Copy pasted on the 01/07
 import numpy as np
 import emcee
-import astropy.io as pyfits
+import pyfits
 import glob
 from scipy.integrate import quad
 

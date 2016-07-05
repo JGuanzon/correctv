@@ -8,13 +8,13 @@ In supernova cosmology, peculiar velocities are often seen as just a source of n
 
 **04/07-08/07**
 - [x] Check 'mistake' on emcee (the missing 2pi). *Results: Running it with and without 2pi didn't change the outcome.*
-- [ ] Read [Davis T, et al](http://arxiv.org/abs/1012.2912) paper.
+- [x] Read [Davis T, et al](http://arxiv.org/abs/1012.2912) paper.
 - [ ] Read Ed's paper.
 - [ ] Review background information for all the different variables.
 - [ ] Review [Ed's code](https://github.com/EdMacaulay/Spectroscopic_SN_min_ChSq).
 - [ ] Modify [Ed's code](https://github.com/EdMacaulay/Spectroscopic_SN_min_ChSq) in terms of what we need.
 - [ ] Review physics behind distances (eg luminousity distance).
-- [ ] Review about calculating density/masss maps to pecular velocity field correction to hubble diagram scattering.
+- [ ] Review about calculating density/mass maps to pecular velocity field correction to hubble diagram scattering.
 - [ ] Generate Hubble's diagram with and without pecular velocities.
 - [ ] Fit for omega_0 and omega_alpha.
 
