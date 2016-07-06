@@ -3,7 +3,7 @@ import emcee
 import pyfits
 from scipy.integrate import quad
 import math
-
+import matplotlib.pyplot as plt
 
 # ****** Distance Calculation Functions ******
 
@@ -150,3 +150,29 @@ pos = [startValues + 1e-3 * np.random.randn(ndim) for i in range(nwalkers)]
 # run the sampler
 # how many steps (will have nSteps*nwalkers of samples)
 #sampler.run_mcmc(pos, nSteps)
+
+
+# ****** Calculating Observational Comoving Distance ******
+
+# Calculate Modulus Distance mod
+mod = mb - (M_1_B - alpha * x1 + beta * color)
+for i in range(0, len(zcmb)):
+    if thirdvar[i] > 10:
+        mod[i] = mod[i] - Delta_M
+
+# Calculate Luminosity Distance d_L
+d_L = np.power(10.0,(mod-25.0)/5)
+
+# Calculate Comoving Distance d_c
+d_c = d_L/(1.0+zhel)
+
+
+# ****** Calculating Observational Hubble's Law ******
+cLight = 299792.458
+cz = cLight*zcmb
+Hobs = cz/d_c
+Hav = np.average(Hobs)
+
+plt.figure()
+plt.plot(d_c, cz, '.')
+plt.show()
