@@ -13,10 +13,10 @@ In supernova cosmology, peculiar velocities are often seen as just a source of n
 - [x] Review background information for all the different variables.
 - [x] Review [Ed's code](https://github.com/EdMacaulay/Spectroscopic_SN_min_ChSq).
 - [ ] Modify [Ed's code](https://github.com/EdMacaulay/Spectroscopic_SN_min_ChSq) in terms of what we need.
-- [ ] Review physics behind distances (eg luminousity distance). 
+- [ ] Review physics behind distances (eg luminousity distance).
 - [ ] Review about calculating density/mass maps to pecular velocity field correction to hubble diagram scattering.
 - [ ] Generate Hubble's diagram with and without pecular velocities.
-- [ ] Fit for omega_0 and omega_alpha.
+- [ ] Fit for the dark energy parameters omega_0 and omega_alpha.
 
 **27/06-01/07**
 - [x] Go through the [Fitting a Model to Data](http://dan.iel.fm/emcee/current/user/line/) by Friday.
