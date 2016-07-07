@@ -11,7 +11,7 @@ def iEz(z, Omega_M, Omega_L, w_o, w_a):
 	# scale factor
 	a = 1/(1+z)
 	# equation of state of Dark Energy w(z)
-	w_z = w_o + w_a * ( z / a )
+	w_z = w_o + w_a * ( z * a )
 	# E(z)
 	Ez = Omega_L*math.pow(1+z,3*(1+w_z)) + Omega_M*math.pow(1+z,3)
 	Ez = math.sqrt(Ez)
@@ -173,6 +173,7 @@ dmodi = np.sqrt(dmod.diagonal()) #independent sqrt
 
 dmodir = dmodi/mod
 dd_c = dmodir*d_c
+
 
 # ****** Calculating Observational Hubble's Law ******
 cLight = 299792.458
