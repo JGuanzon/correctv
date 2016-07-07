@@ -108,7 +108,7 @@ def lnprob(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
 
 # ****** load eta covariance matrix ******
 #Ceta = pyfits.getdata('C_total_20160610.fits')
-Ceta = 0;
+Ceta = 0
 
 # ****** load JLA ******
 FileName = 'jla_lcparams-header.txt'
@@ -167,6 +167,13 @@ d_L = np.power(10.0,(mod-25.0)/5)
 d_c = d_L/(1.0+zhel)
 
 
+# ****** Calculating Observational Comoving Distance Covariance Matrix ******
+dmod = np.genfromtxt('Cvm.txt', delimiter=' ') #This covariance of distance modulus
+dmodi = np.sqrt(dmod.diagonal()) #independent sqrt
+
+dmodir = dmodi/mod
+dd_c = dmodir*d_c
+
 # ****** Calculating Observational Hubble's Law ******
 cLight = 299792.458
 cz = cLight*zcmb
@@ -174,5 +181,6 @@ Hobs = cz/d_c
 Hav = np.average(Hobs)
 
 plt.figure()
-plt.plot(d_c, cz, '.')
+plt.errorbar(cz, d_c, yerr=dd_c, fmt='.')
+#plt.plot(d_c, cz, '.')
 plt.show()
