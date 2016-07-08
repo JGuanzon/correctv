@@ -116,6 +116,7 @@ mb = DataBlock[:, 4]
 x1 = DataBlock[:, 6]
 color = DataBlock[:, 8]
 thirdvar = DataBlock[:, 10]
+set = DataBlock[:, 17]
 ra = DataBlock[:, 18]
 dec = DataBlock[:, 19]
 
@@ -171,18 +172,18 @@ pos = [startValues + 1e-3 * np.random.randn(ndim) for i in range(nwalkers)]
 
 if __name__ == '__main__':
     # setup the sampler
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(zhel, zcmb, dmodm, mod), threads=2)
+    #sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(zhel, zcmb, dmodm, mod), threads=2)
     # run the sampler
     # how many steps (will have nSteps*nwalkers of samples)
-    sampler.run_mcmc(pos, nSteps)
+    #sampler.run_mcmc(pos, nSteps)
     #samples = sampler.chain[:, 50:, :].reshape((-1, ndim))
-    samples = sampler.chain.reshape((-1, ndim))
-    fig = corner.corner(samples, labels=["$m_0$", "$w_0$", "$w_a$"], truths=[0.3, -1, 0])
+    #samples = sampler.chain.reshape((-1, ndim))
+    #fig = corner.corner(samples, labels=["$Omega_0$", "$w_0$", "$w_a$"], truths=[0.3, -1, 0])
 
     elapsed = time.time() - t
     print elapsed
-    # ****** Calculating Observational Hubble's Law ******
 
+    # ****** Calculating Observational Hubble's Law ******
     cLight = 299792.458
     cz = cLight*zcmb
     Hobs = cz/d_c
@@ -192,4 +193,24 @@ if __name__ == '__main__':
     plt.errorbar(d_c, cz, xerr=dd_c, fmt='.')
     plt.xlabel('Comoving Distance')
     plt.ylabel('Velocity cz')
+
+
+    # Actual
+
+    setval = ['SNLS', 'SDSS', 'Low-z', 'HST']
+    orderval = [3, 2, 1, 4]
+    colorval = ['DarkGoldenRod', 'SeaGreen', 'blue', 'red']
+    plt.figure()
+    for i in orderval:
+        print i
+        ind = [n for n, s in enumerate(set == i) if s]
+        plt.errorbar(zcmb[ind], mod[ind], yerr=dmodi[ind], fmt='.', color=colorval[i-1], label=setval[i-1])
+    plt.legend(loc='best')
+    plt.xlabel('Red shift $z_{cmb}$')
+    plt.ylabel('Modulus Distance $\mu$')
+    plt.axis([0, 1.3, 32, 46])
     plt.show()
+
+
+# ****** Added some stuff ******
+

@@ -6,6 +6,11 @@ In supernova cosmology, peculiar velocities are often seen as just a source of n
 
 **To Do List**
 
+**11/07-15/07**
+- [ ] Create hubble diagram of mod and redshift.
+- [ ] Generate fake data (including adding sigma=0.14 normal distribution to mod)
+- [ ] Observe the effects on the hubble diagram.
+
 **04/07-08/07**
 - [x] Check 'mistake' on emcee (the missing 2pi). *Note: Running it with and without 2pi didn't change the outcome.*
 - [x] Read [Davis T, et al](http://arxiv.org/abs/1012.2912) paper. *Note: Skipped over the complicated covariance matrix part.*
