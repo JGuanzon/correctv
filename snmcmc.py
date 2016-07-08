@@ -194,8 +194,11 @@ if __name__ == '__main__':
     plt.xlabel('Comoving Distance')
     plt.ylabel('Velocity cz')
 
-
-    # Actual
+    #Theoretical Mod Values
+    modt = []
+    for i in range(0, len(zcmb)):
+        modi = distance_modulus(zhel[i], zcmb[i], my_Om0, (1.0-my_Om0), my_w0, my_wa)
+        modt = np.append(modt,modi)
 
     setval = ['SNLS', 'SDSS', 'Low-z', 'HST']
     orderval = [3, 2, 1, 4]
@@ -205,6 +208,7 @@ if __name__ == '__main__':
         print i
         ind = [n for n, s in enumerate(set == i) if s]
         plt.errorbar(zcmb[ind], mod[ind], yerr=dmodi[ind], fmt='.', color=colorval[i-1], label=setval[i-1])
+    plt.plot(sorted(zcmb),sorted(modt),color='black',label='Theoretical')
     plt.legend(loc='best')
     plt.xlabel('Red shift $z_{cmb}$')
     plt.ylabel('Modulus Distance $\mu$')
