@@ -4,7 +4,9 @@ import pyfits
 from scipy.integrate import quad
 import math
 import matplotlib.pyplot as plt
-
+import corner
+import time
+t = time.time()
 # ****** Distance Calculation Functions ******
 
 def iEz(z, Omega_M, Omega_L, w_o, w_a):
@@ -48,14 +50,14 @@ def distance_modulus(z_hel, z_cmb, Omega_M, Omega_L, w_o, w_a):
 
 # Defines a prior.  just sets acceptable ranges
 def lnprior(theta):
-    my_Om0, my_w0, alpha, beta, M_1_B, Delta_M = theta
+    my_Om0, my_w0, my_wa = theta
     if  0.0 < my_Om0 < 1.0 and -2.0 < my_w0 < -0.0:
         return 0.0
     return -np.inf
 
 # Defines likelihood.  has to be ln likelihood
-def lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
-    my_Om0, my_w0, alpha, beta, M_1_B, Delta_M = theta
+def lnlike(theta, zhel, zcmb, dmodm, mod):
+    my_Om0, my_w0, my_wa = theta
 
     # Assemble covariance matrix
     #Cmu = np.zeros_like(Ceta[::3, ::3])
@@ -68,47 +70,41 @@ def lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
     #sigma_pecvel = (5 * 150 / 3e5) / (np.log(10.) * sigma[:, 2])
     #Cmu[np.diag_indices_from(Cmu)] += sigma[:, 0] ** 2 + sigma[:, 1] ** 2 + sigma_pecvel ** 2
 
-    # Observation
-    mod = mb - (M_1_B - alpha * x1 + beta * color)
-    for i in range(0, len(zcmb)):
-        if thirdvar[i] > 10:
-            mod[i] = mod[i] - Delta_M
-
     # Theory
     mod_theory = []
     for i in range(0, len(zcmb)):
-        mod_i = distance_modulus(zhel[i], zcmb[i], my_Om0, (1.0-my_Om0), my_w0, 0.0)
+        mod_i = distance_modulus(zhel[i], zcmb[i], my_Om0, (1.0-my_Om0), my_w0, my_wa)
         mod_theory = np.append(mod_theory,mod_i)
 
     # ChSq
     Delta = mod - mod_theory
-    #inv_CM = np.linalg.pinv(Cmu)
+    inv_CM = np.linalg.pinv(dmodm)
     ChSq = np.dot(Delta, (np.dot(inv_CM, Delta)))
 
     # Write parameters
-    f_handle = open('Chains/my_params_JLA_FlatwCDM_20160610c.txt', 'a')
-    stringOut = str(my_Om0) +  ',' + str(my_w0)  + ',' + str(
-        alpha) + ',' + str(beta) + ',' + str(M_1_B) + ',' + str(Delta_M) + '\n'
-    f_handle.write(stringOut)
-    f_handle.close()
+    #f_handle = open('Chains/my_params_JLA_FlatwCDM_20160610c.txt', 'a')
+    #stringOut = str(my_Om0) +  ',' + str(my_w0)  + ',' + str(
+    #    alpha) + ',' + str(beta) + ',' + str(M_1_B) + ',' + str(Delta_M) + '\n'
+    #f_handle.write(stringOut)
+    #f_handle.close()
 
-    f_handle = open('ChSq_Chains/ChSqFile_JLA_FlatwCDM_20160610c.txt', 'a')
-    stringOut = str(ChSq) + '\n'
-    f_handle.write(stringOut)
-    f_handle.close()
-
+    #f_handle = open('ChSq_Chains/ChSqFile_JLA_FlatwCDM_20160610c.txt', 'a')
+    #stringOut = str(ChSq) + '\n'
+    #f_handle.write(stringOut)
+    #f_handle.close()
+    print ChSq
     return -0.5 * ChSq
 
 # lnprob - this just combines prior with likelihood
-def lnprob(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta):
+def lnprob(theta, zhel, zcmb, dmodm, mod):
     lp = lnprior(theta)
     if not np.isfinite(lp):
         return -np.inf
-    return lp + lnlike(theta, zhel, zcmb, mb, x1, color, thirdvar, Ceta)
+    return lp + lnlike(theta, zhel, zcmb, dmodm, mod)
 
 # ****** load eta covariance matrix ******
 #Ceta = pyfits.getdata('C_total_20160610.fits')
-Ceta = 0
+#Ceta = 0
 
 # ****** load JLA ******
 FileName = 'jla_lcparams-header.txt'
@@ -133,23 +129,7 @@ H0 = 70.0
 my_Om0 = 0.3
 Ode0 = 0.7
 my_w0 = -1.0
-wa = 0.0
-
-startValues = [my_Om0, my_w0, alpha, beta, M_1_B, Delta_M]
-
-# how many parameters to fit
-ndim = len(startValues)
-
-# how many walkers
-nwalkers = 100
-nSteps = 1000
-pos = [startValues + 1e-3 * np.random.randn(ndim) for i in range(nwalkers)]
-
-# setup the sampler
-#sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(zhel, zcmb, mb, x1, color, thirdvar, Ceta), threads=16)
-# run the sampler
-# how many steps (will have nSteps*nwalkers of samples)
-#sampler.run_mcmc(pos, nSteps)
+my_wa = 0.0
 
 
 # ****** Calculating Observational Comoving Distance ******
@@ -168,20 +148,48 @@ d_c = d_L/(1.0+zhel)
 
 
 # ****** Calculating Observational Comoving Distance Covariance Matrix ******
+
 dmod = np.genfromtxt('Cvm.txt', delimiter=' ') #This covariance of distance modulus
 dmodi = np.sqrt(dmod.diagonal()) #independent sqrt
+dmodm = np.diag(dmodi)
 
 dmodir = dmodi/mod
 dd_c = dmodir*d_c
 
 
-# ****** Calculating Observational Hubble's Law ******
-cLight = 299792.458
-cz = cLight*zcmb
-Hobs = cz/d_c
-Hav = np.average(Hobs)
+# ****** Start emcee ******
 
-plt.figure()
-plt.errorbar(cz, d_c, yerr=dd_c, fmt='.')
-#plt.plot(d_c, cz, '.')
-plt.show()
+startValues = [my_Om0, my_w0, my_wa]
+
+# how many parameters to fit
+ndim = len(startValues)
+
+# how many walkers
+nwalkers = 10
+nSteps = 1
+pos = [startValues + 1e-3 * np.random.randn(ndim) for i in range(nwalkers)]
+
+if __name__ == '__main__':
+    # setup the sampler
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(zhel, zcmb, dmodm, mod), threads=2)
+    # run the sampler
+    # how many steps (will have nSteps*nwalkers of samples)
+    sampler.run_mcmc(pos, nSteps)
+    #samples = sampler.chain[:, 50:, :].reshape((-1, ndim))
+    samples = sampler.chain.reshape((-1, ndim))
+    fig = corner.corner(samples, labels=["$m_0$", "$w_0$", "$w_a$"], truths=[0.3, -1, 0])
+
+    elapsed = time.time() - t
+    print elapsed
+    # ****** Calculating Observational Hubble's Law ******
+
+    cLight = 299792.458
+    cz = cLight*zcmb
+    Hobs = cz/d_c
+    Hav = np.average(Hobs)
+
+    plt.figure()
+    plt.errorbar(d_c, cz, xerr=dd_c, fmt='.')
+    plt.xlabel('Comoving Distance')
+    plt.ylabel('Velocity cz')
+    plt.show()
