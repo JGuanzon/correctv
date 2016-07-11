@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import corner
 import time
 t = time.time()
+
+
 # ****** Distance Calculation Functions ******
 
 def iEz(z, Omega_M, Omega_L, w_o, w_a):
@@ -102,11 +104,14 @@ def lnprob(theta, zhel, zcmb, dmodm, mod):
         return -np.inf
     return lp + lnlike(theta, zhel, zcmb, dmodm, mod)
 
+
 # ****** load eta covariance matrix ******
+
 #Ceta = pyfits.getdata('C_total_20160610.fits')
-#Ceta = 0
+
 
 # ****** load JLA ******
+
 FileName = 'jla_lcparams-header.txt'
 DataBlock = np.genfromtxt(FileName, skip_header=1, delimiter=' ')
 
@@ -205,7 +210,6 @@ if __name__ == '__main__':
     colorval = ['DarkGoldenRod', 'SeaGreen', 'blue', 'red']
     plt.figure()
     for i in orderval:
-        print i
         ind = [n for n, s in enumerate(set == i) if s]
         plt.errorbar(zcmb[ind], mod[ind], yerr=dmodi[ind], fmt='.', color=colorval[i-1], label=setval[i-1])
     plt.plot(sorted(zcmb),sorted(modt),color='black',label='Theoretical')
@@ -213,8 +217,37 @@ if __name__ == '__main__':
     plt.xlabel('Red shift $z_{cmb}$')
     plt.ylabel('Modulus Distance $\mu$')
     plt.axis([0, 1.3, 32, 46])
-    plt.show()
 
 
-# ****** Added some stuff ******
+# ****** Create Fake Data ******
+plt.figure()
+plt.plot(zcmb,zhel)
+plt.xlabel('$z_{cmb}$')
+plt.ylabel('$z_{hel}$')
+
+plt.figure()
+for i in orderval:
+    print i
+    ind = [n for n, s in enumerate(set == i) if s]
+    plt.hist(zcmb[ind]-zhel[ind], color=colorval[i - 1], label=setval[i - 1], alpha=0.7)
+plt.legend(loc='best')
+plt.xlabel('$z_{cmb}-z_{hel}$')
+plt.ylabel('Frequency')
+zstd = np.std(zcmb-zhel)
+print zstd
+
+plt.figure()
+plt.hist(zcmb-zhel)
+plt.xlabel('$z_{cmb}-z_{hel}$')
+plt.ylabel('Frequency')
+
+nf = 10000 #number of fake data points
+zcmbf = np.random.rand(n)
+zhelf = zcmbf + np.random.randn(n)*zstd
+
+plt.figure()
+plt.hist(zcmbf-zhelf)
+plt.xlabel('Fake $z_{cmb}-z_{hel}$')
+plt.ylabel('Frequency')
+plt.show()
 
