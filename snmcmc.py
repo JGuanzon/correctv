@@ -196,6 +196,7 @@ if __name__ == '__main__':
 
     plt.figure()
     plt.errorbar(d_c, cz, xerr=dd_c, fmt='.')
+    plt.title('JLA Hubbles Diagram ($cz = H_0d$)')
     plt.xlabel('Comoving Distance')
     plt.ylabel('Velocity cz')
 
@@ -214,6 +215,7 @@ if __name__ == '__main__':
         plt.errorbar(zcmb[ind], mod[ind], yerr=dmodi[ind], fmt='.', color=colorval[i-1], label=setval[i-1])
     plt.plot(sorted(zcmb),sorted(modt),color='black',label='Theoretical')
     plt.legend(loc='best')
+    plt.title('JLA Hubbles Diagram')
     plt.xlabel('Red shift $z_{cmb}$')
     plt.ylabel('Modulus Distance $\mu$')
     plt.axis([0, 1.3, 32, 46])
@@ -222,32 +224,60 @@ if __name__ == '__main__':
 # ****** Create Fake Data ******
 plt.figure()
 plt.plot(zcmb,zhel)
+plt.title('JLA Comparing the CMB frame redshift and the Heliocentric redshift')
 plt.xlabel('$z_{cmb}$')
 plt.ylabel('$z_{hel}$')
 
 plt.figure()
 for i in orderval:
-    print i
     ind = [n for n, s in enumerate(set == i) if s]
     plt.hist(zcmb[ind]-zhel[ind], color=colorval[i - 1], label=setval[i - 1], alpha=0.7)
 plt.legend(loc='best')
+plt.title('JLA Histogram $z_{cmb}-z_{hel}$ (seperated by SN survey)')
 plt.xlabel('$z_{cmb}-z_{hel}$')
 plt.ylabel('Frequency')
 zstd = np.std(zcmb-zhel)
-print zstd
 
 plt.figure()
 plt.hist(zcmb-zhel)
+plt.title('JLA Histogram $z_{cmb}-z_{hel}$ (total)')
 plt.xlabel('$z_{cmb}-z_{hel}$')
 plt.ylabel('Frequency')
 
+# Create fake zcmb and zhel
 nf = 10000 #number of fake data points
 zcmbf = np.random.rand(n)
 zhelf = zcmbf + np.random.randn(n)*zstd
 
 plt.figure()
 plt.hist(zcmbf-zhelf)
+plt.title('Fake Histogram $z_{cmb}-z_{hel}$ (total)')
 plt.xlabel('Fake $z_{cmb}-z_{hel}$')
 plt.ylabel('Frequency')
-plt.show()
 
+# Other fake variables
+OMf = 0.3 #Omega_M fake, matter density parameter
+OLf = 1-OMf #Omega_Lambda fake, cosmological constant/dark energy density parameter
+w0f = -1.0 #w_0 fake, first dark energy equation of state variable, should be approx -1
+waf = 0.0 #w_a fake, second dark energy equation of state variable, around 0?
+
+# Create fake distance modulus
+dmft = []
+for i in range(0, len(zcmbf)):
+    dmfi = distance_modulus(zhelf[i], zcmbf[i], OMf, OLf, w0f, waf)
+    dmft = np.append(dmft, dmfi)
+dmf = dmft + np.random.randn(n)*0.14 # fake distance modulus
+ddmf = np.ones(n)*0.14 # uncertainty dm
+
+plt.figure()
+plt.errorbar(zcmbf, dmf, yerr=ddmf, fmt='.', label='Fake Data')
+plt.plot(sorted(zcmbf), sorted(dmft), color='black', label='Theoretical')
+plt.legend(loc='best')
+plt.title('Fake Hubbles Diagram')
+plt.xlabel('Fake Red shift $z_{cmb}$')
+plt.ylabel('Fake Modulus Distance $\mu$')
+plt.axis([0, 1.3, 32, 46])
+
+# 
+
+plt.show()
