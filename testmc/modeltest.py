@@ -80,7 +80,7 @@ print "f = ", np.exp(lnfml)
 
 # Marginalization & uncertainty estimation
 ndim, nwalkers = 3, 100
-pos = [result["x"] + 1e-4 * np.random.randn(ndim) for i in range(nwalkers)]
+pos = [[-0.5, 2, 0.9] + 1e-4 * np.random.randn(ndim) for i in range(nwalkers)]
 sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(x, y, ye))
 sampler.run_mcmc(pos, 500)
 samples = sampler.chain[:, 50:, :].reshape((-1, ndim))

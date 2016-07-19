@@ -6,9 +6,16 @@ In supernova cosmology, peculiar velocities are often seen as just a source of n
 
 **To Do List**
 
+**18/07-22/07**
+- [ ] Try to figure out what is going wrong with the code.
+- [x] Optimise code + add counter/timer.
+- [x] Run multiple times at different inputs.
+- [ ] Test the probability functions.
+
+
 **11/07-15/07**
-- [ ] Create hubble diagram of mod and redshift.
-- [ ] Generate fake data (including adding sigma=0.14 normal distribution to mod)
+- [x] Create hubble diagram of mod and redshift.
+- [x] Generate fake data (including adding sigma=0.14 normal distribution to mod).
 - [ ] Observe the effects on the hubble diagram.
 
 **04/07-08/07**

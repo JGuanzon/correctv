@@ -11,54 +11,34 @@ t = time.time()
 
 # ****** Distance Calculation Functions ******
 
-def iEz(z, Omega_M, Omega_L, w_o, w_a):
-	# scale factor
-	a = 1/(1+z)
-	# equation of state of Dark Energy w(z)
-	w_z = w_o + w_a * ( z * a )
-	# E(z)
-	Ez = Omega_L*math.pow(1+z,3*(1+w_z)) + Omega_M*math.pow(1+z,3)
-	Ez = math.sqrt(Ez)
-	invEz = 1.0 / Ez
-	return invEz
-
-def Comoving_Distance(z, Omega_M, Omega_L, w_o, w_a):
-	# Speed of light, in km / s
-	cLight = 299792.458
-	# Hubble's constant, in (km / s) / Mpc
-	H_o = 70.0
-	# integrate E(z) to get comoving distance
-	Dc, error = quad(iEz, 0, z, args=(Omega_M, Omega_L, w_o, w_a))
-	# factor in units
-	Dc = Dc* (cLight/H_o)
-	return Dc
-
-def Luminosity_Distance(z_hel, z_cmb, Omega_M, Omega_L, w_o, w_a):
-	# factor in units
-	Dc = Comoving_Distance(z_cmb, Omega_M, Omega_L, w_o, w_a)
-	# calculate the luminosity distance
-	Dl = Dc * (1.0+z_hel)
-	return Dl
-
 def distance_modulus(z_hel, z_cmb, Omega_M, Omega_L, w_o, w_a):
-	# get the luminosity distance
-	d_L = Luminosity_Distance(z_hel, z_cmb, Omega_M, Omega_L, w_o, w_a)
-	# convert to distance modulus
-	mu = 25 + 5.0 *  np.log10(d_L)
-	return mu
-
+    # Inverted E(z)
+    iEz = lambda z: 1.0 / math.sqrt(Omega_L * math.pow(1 + z, 3 * (1 + w_o + w_a * (z / (1 + z)))) + Omega_M * math.pow(1 + z, 3))
+    # integrate E(z) to get comoving distance with factor in units
+    Dc = []
+    #t5 = time.time()
+    for i in range(0, len(z_cmb)):
+        Dci, error = quad(iEz, 0, z_cmb[i])
+        Dc = np.append(Dc, Dci)
+    #print "time5", time.time() - t5
+    Dc = Dc*(299792.458/70.0)
+    # calculate the luminosity distance
+    Dl = Dc*(1.0+z_hel)
+    # convert to distance modulus
+    mu = 25 + 5.0 *  np.log10(Dl)
+    return mu
 
 # ****** EMCEE Functions ******
 
 # Defines a prior.  just sets acceptable ranges
 def lnprior(theta):
     my_Om0, my_w0, my_wa = theta
-    if  0.0 < my_Om0 < 1.0 and -2.0 < my_w0 < -0.0:
+    if  0.0 < my_Om0 < 1.0 and -2.0 < my_w0 < -0.0 and -3.0 < my_wa < 2.0:
         return 0.0
     return -np.inf
 
 # Defines likelihood.  has to be ln likelihood
-def lnlike(theta, zhel, zcmb, dmodm, mod):
+def lnlike(theta, zhel, zcmb, invdmodm, mod):
     my_Om0, my_w0, my_wa = theta
 
     # Assemble covariance matrix
@@ -73,28 +53,17 @@ def lnlike(theta, zhel, zcmb, dmodm, mod):
     #Cmu[np.diag_indices_from(Cmu)] += sigma[:, 0] ** 2 + sigma[:, 1] ** 2 + sigma_pecvel ** 2
 
     # Theory
-    mod_theory = []
-    for i in range(0, len(zcmb)):
-        mod_i = distance_modulus(zhel[i], zcmb[i], my_Om0, (1.0-my_Om0), my_w0, my_wa)
-        mod_theory = np.append(mod_theory,mod_i)
+    #t3 = time.time()
+    modt = distance_modulus(zhel, zcmb, my_Om0, (1.0-my_Om0), my_w0, my_wa)
+    #print "time3", time.time() - t3
 
     # ChSq
-    Delta = mod - mod_theory
-    inv_CM = np.linalg.pinv(dmodm)
-    ChSq = np.dot(Delta, (np.dot(inv_CM, Delta)))
+    #t4 = time.time()
+    Delta = mod - modt
+    ChSq = np.dot(Delta, (np.dot(invdmodm, Delta)))
+    #print "time4", time.time() - t4
 
-    # Write parameters
-    #f_handle = open('Chains/my_params_JLA_FlatwCDM_20160610c.txt', 'a')
-    #stringOut = str(my_Om0) +  ',' + str(my_w0)  + ',' + str(
-    #    alpha) + ',' + str(beta) + ',' + str(M_1_B) + ',' + str(Delta_M) + '\n'
-    #f_handle.write(stringOut)
-    #f_handle.close()
-
-    #f_handle = open('ChSq_Chains/ChSqFile_JLA_FlatwCDM_20160610c.txt', 'a')
-    #stringOut = str(ChSq) + '\n'
-    #f_handle.write(stringOut)
-    #f_handle.close()
-    print ChSq
+    #print ChSq
     return -0.5 * ChSq
 
 # lnprob - this just combines prior with likelihood
@@ -158,6 +127,7 @@ d_c = d_L/(1.0+zhel)
 dmod = np.genfromtxt('Cvm.txt', delimiter=' ') #This covariance of distance modulus
 dmodi = np.sqrt(dmod.diagonal()) #independent sqrt
 dmodm = np.diag(dmodi)
+invdmodm = np.linalg.pinv(dmodm)
 
 dmodir = dmodi/mod
 dd_c = dmodir*d_c
@@ -172,18 +142,16 @@ ndim = len(startValues)
 
 # how many walkers
 nwalkers = 10
-nSteps = 1
+nSteps = 200
 pos = [startValues + 1e-3 * np.random.randn(ndim) for i in range(nwalkers)]
 
 if __name__ == '__main__':
-    # setup the sampler
-    #sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(zhel, zcmb, dmodm, mod), threads=2)
-    # run the sampler
-    # how many steps (will have nSteps*nwalkers of samples)
-    #sampler.run_mcmc(pos, nSteps)
-    #samples = sampler.chain[:, 50:, :].reshape((-1, ndim))
-    #samples = sampler.chain.reshape((-1, ndim))
-    #fig = corner.corner(samples, labels=["$Omega_0$", "$w_0$", "$w_a$"], truths=[0.3, -1, 0])
+    # setup the sampler run the sampler how many steps (will have nSteps*nwalkers of samples)
+    # sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(zhel, zcmb, invdmodm, mod), threads=1)
+    # sampler.run_mcmc(pos, nSteps)
+    # samples = sampler.chain[:, 50:, :].reshape((-1, ndim))
+    # samples = sampler.chain.reshape((-1, ndim))
+    # fig = corner.corner(samples, labels=["$Omega_0$", "$w_0$", "$w_a$"], truths=[0.3, -1, 0])
 
     elapsed = time.time() - t
     print elapsed
@@ -201,10 +169,7 @@ if __name__ == '__main__':
     plt.ylabel('Velocity cz')
 
     #Theoretical Mod Values
-    modt = []
-    for i in range(0, len(zcmb)):
-        modi = distance_modulus(zhel[i], zcmb[i], my_Om0, (1.0-my_Om0), my_w0, my_wa)
-        modt = np.append(modt,modi)
+    modt = distance_modulus(zhel, zcmb, my_Om0, (1.0-my_Om0), my_w0, my_wa)
 
     setval = ['SNLS', 'SDSS', 'Low-z', 'HST']
     orderval = [3, 2, 1, 4]
@@ -221,63 +186,83 @@ if __name__ == '__main__':
     plt.axis([0, 1.3, 32, 46])
 
 
-# ****** Create Fake Data ******
-plt.figure()
-plt.plot(zcmb,zhel)
-plt.title('JLA Comparing the CMB frame redshift and the Heliocentric redshift')
-plt.xlabel('$z_{cmb}$')
-plt.ylabel('$z_{hel}$')
+    # ****** Create Fake Data ******
+    plt.figure()
+    plt.plot(zcmb,zhel)
+    plt.title('JLA Comparing the CMB frame redshift and the Heliocentric redshift')
+    plt.xlabel('$z_{cmb}$')
+    plt.ylabel('$z_{hel}$')
 
-plt.figure()
-for i in orderval:
-    ind = [n for n, s in enumerate(set == i) if s]
-    plt.hist(zcmb[ind]-zhel[ind], color=colorval[i - 1], label=setval[i - 1], alpha=0.7)
-plt.legend(loc='best')
-plt.title('JLA Histogram $z_{cmb}-z_{hel}$ (seperated by SN survey)')
-plt.xlabel('$z_{cmb}-z_{hel}$')
-plt.ylabel('Frequency')
-zstd = np.std(zcmb-zhel)
+    plt.figure()
+    for i in orderval:
+        ind = [n for n, s in enumerate(set == i) if s]
+        plt.hist(zcmb[ind]-zhel[ind], color=colorval[i - 1], label=setval[i - 1], alpha=0.7)
+    plt.legend(loc='best')
+    plt.title('JLA Histogram $z_{cmb}-z_{hel}$ (seperated by SN survey)')
+    plt.xlabel('$z_{cmb}-z_{hel}$')
+    plt.ylabel('Frequency')
+    zstd = np.std(zcmb-zhel)
 
-plt.figure()
-plt.hist(zcmb-zhel)
-plt.title('JLA Histogram $z_{cmb}-z_{hel}$ (total)')
-plt.xlabel('$z_{cmb}-z_{hel}$')
-plt.ylabel('Frequency')
+    plt.figure()
+    plt.hist(zcmb-zhel)
+    plt.title('JLA Histogram $z_{cmb}-z_{hel}$ (total)')
+    plt.xlabel('$z_{cmb}-z_{hel}$')
+    plt.ylabel('Frequency')
 
-# Create fake zcmb and zhel
-nf = 10000 #number of fake data points
-zcmbf = np.random.rand(n)
-zhelf = zcmbf + np.random.randn(n)*zstd
+    # Create fake zcmb and zhel
+    nf = 740 #number of fake data points
+    zcmbf = np.random.rand(nf)
+    zhelf = zcmbf + np.random.randn(nf)*zstd
 
-plt.figure()
-plt.hist(zcmbf-zhelf)
-plt.title('Fake Histogram $z_{cmb}-z_{hel}$ (total)')
-plt.xlabel('Fake $z_{cmb}-z_{hel}$')
-plt.ylabel('Frequency')
+    plt.figure()
+    plt.hist(zcmbf-zhelf)
+    plt.title('Fake Histogram $z_{cmb}-z_{hel}$ (total)')
+    plt.xlabel('Fake $z_{cmb}-z_{hel}$')
+    plt.ylabel('Frequency')
 
-# Other fake variables
-OMf = 0.3 #Omega_M fake, matter density parameter
-OLf = 1-OMf #Omega_Lambda fake, cosmological constant/dark energy density parameter
-w0f = -1.0 #w_0 fake, first dark energy equation of state variable, should be approx -1
-waf = 0.0 #w_a fake, second dark energy equation of state variable, around 0?
+    # Other fake variables
+    OMf = 0.3 #Omega_M fake, matter density parameter
+    OLf = 1-OMf #Omega_Lambda fake, cosmological constant/dark energy density parameter
+    w0f = -1.5 #w_0 fake, first dark energy equation of state variable, should be approx -1
+    waf = 0.5 #w_a fake, second dark energy equation of state variable, around 0?
 
-# Create fake distance modulus
-dmft = []
-for i in range(0, len(zcmbf)):
-    dmfi = distance_modulus(zhelf[i], zcmbf[i], OMf, OLf, w0f, waf)
-    dmft = np.append(dmft, dmfi)
-dmf = dmft + np.random.randn(n)*0.14 # fake distance modulus
-ddmf = np.ones(n)*0.14 # uncertainty dm
+    # Create fake distance modulus
+    dmft = distance_modulus(zhelf, zcmbf, OMf, OLf, w0f, waf)
+    dmf = dmft + np.random.randn(nf)*0.14 # fake distance modulus
+    ddmf = np.ones(nf)*0.14 # uncertainty dm
+    ddmfm = np.diag(ddmf) # matrix version of dm
+    invddmfm = np.linalg.pinv(ddmfm)
 
-plt.figure()
-plt.errorbar(zcmbf, dmf, yerr=ddmf, fmt='.', label='Fake Data')
-plt.plot(sorted(zcmbf), sorted(dmft), color='black', label='Theoretical')
-plt.legend(loc='best')
-plt.title('Fake Hubbles Diagram')
-plt.xlabel('Fake Red shift $z_{cmb}$')
-plt.ylabel('Fake Modulus Distance $\mu$')
-plt.axis([0, 1.3, 32, 46])
+    plt.figure()
+    plt.errorbar(zcmbf, dmf, yerr=ddmf, fmt='.', label='Fake Data')
+    plt.plot(sorted(zcmbf), sorted(dmft), color='black', label='Theoretical')
+    plt.legend(loc='best')
+    plt.title('Fake Hubbles Diagram')
+    plt.xlabel('Fake Red shift $z_{cmb}$')
+    plt.ylabel('Fake Modulus Distance $\mu$')
+    plt.axis([0, 1.3, 32, 46])
 
-# 
+    # ****** Start EMCEE ******
+    # Parameters
+    istart = [0.3, -1.0, 0.0] #Guess values for Omega_M (note Omega_L = 1 - Omega_M), w_0 and w_0.
+    ndim = len(istart)
+    nwalk = 50 #number of walkers
+    nstep = 2000 #number of steps
+    sigrange = [0.075, 0.25, 0.5] #sigma of initial guess
+    ipos = [istart + 1e-1 * np.random.randn(ndim) for i in range(nwalk)]
 
-plt.show()
+    # setup the sampler run the sampler how many steps (will have nSteps*nwalkers of samples)
+    sampler = emcee.EnsembleSampler(nwalk, ndim, lnprob, args=(zhelf, zcmbf, invddmfm, dmf), threads=16)
+    tnow = time.time()
+    for i, result in enumerate(sampler.sample(ipos, iterations=nstep)):
+        print time.time() - tnow
+        print i
+        #print result
+        tnow = time.time()
+    # t2 = time.time()
+    #sampler.run_mcmc(ipos, nstep)
+    #print time.time() - t2
+    samples = sampler.chain[:, 1000:, :].reshape((-1, ndim))
+    fig = corner.corner(samples, labels=["$\Omega_0$", "$w_0$", "$w_a$"], truths=[OMf, w0f, waf])
+
+    plt.show()
